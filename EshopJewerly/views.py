@@ -131,14 +131,6 @@ def category_list(request):
 
 @login_required
 @admin_required
-def edit_category(request, category_id):
-    category = get_object_or_404(Category, pk=category_id)
-    # Handle editing category logic here
-    return render(request, 'edit_category.html', {'category': category})
-
-
-@login_required
-@admin_required
 def delete_category(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     if request.method == 'POST':
@@ -465,3 +457,33 @@ def orders_list(request):
     orders = Order.objects.all()
     context = {'orders': orders}
     return render(request, 'orders.html', context)
+
+
+@login_required
+@admin_required
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, pk=category_id)
+
+    if request.method == 'POST':
+        category.delete()
+        return redirect('category_list')
+
+    return render(request, 'delete_category.html', {'product': category})
+
+
+@login_required
+@admin_required
+def edit_category(request, category_id):
+    category = get_object_or_404(Category, pk=category_id)
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES, instance=category)
+        if form.is_valid():
+            form.save()
+            # Handle successful form submission
+            return redirect('category_list')
+    else:
+        form = CategoryForm(instance=category)
+
+    context = {'form': form, 'edit_mode': True}  # Pass edit_mode=True for editing
+    return render(request, 'add_category.html', context)

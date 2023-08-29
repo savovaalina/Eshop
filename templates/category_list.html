@@ -21,7 +21,13 @@
           <td>{{ category.name }}</td>
           <td>
             <a href="{% url 'edit_category' category.id %}" class="btn btn-sm btn-primary">Edit</a>
-            <a href="{% url 'delete_category' category.id %}" class="btn btn-sm btn-danger">Delete</a>
+            <form method="post" action="{% url 'delete_category' category.pk %}"
+                                                      class="mt-2">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-block">
+                                                        Delete
+                                                    </button>
+                                                </form>
           </td>
         </tr>
       {% endfor %}

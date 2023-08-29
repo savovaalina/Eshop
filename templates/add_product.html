@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
- <form method="post" enctype="multipart/form-data">
+    <div class="container pt-5">
+ <form method="post" enctype="multipart/form-data" class="form-group">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">
+    <button type="submit" class="btn btn-primary">
         {% if edit_mode %}
             Edit Product
         {% else %}
@@ -12,4 +13,5 @@
         {% endif %}
     </button>
 </form>
+    </div>
 {% endblock %}
