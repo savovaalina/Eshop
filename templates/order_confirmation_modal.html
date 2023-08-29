@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="modal">
+    <div class="modal-content">
+      <h1>Order Confirmation</h1>
+      <p>Order ID: {{ order.id }}</p>
+      <p>User: {{ order.user.username }}</p>
+      <p>Product: {{ order.products.first.name }}</p>
+      <p>Price: {{ order.products.first.price }}</p>
+      <!-- Display more order details here -->
+      <button onclick="window.location.href='/products/';">Close</button>
+    </div>
+  </div>
+{% endblock %}

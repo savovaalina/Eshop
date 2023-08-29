@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+         {% if  user.is_superuser %}
+
+         <a href="{% url 'add_category' %}" class="btn btn-dark mb-3 mt-5">Add Product</a>
+
+
+         {% endif %}
+            <form method="GET" action="{% url 'product_list' %}">
+                <div class="col-md-5 mt-5">
+                    <div class="d-flex justify-content-between">
+                    <div class="col-lg-5 col-md-12 col-12">
+          <div class="input-group float-center">
+                        <div class="form-outline" >
+                            <label for="search" class="form-label">Search:</label>
+                            <input type="text" id="search" name="search" class="form-control" value="{{ request.GET.search }}">
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="mb-3 px-3">
+                            <label>Categories:</label><br>
+                            <div class="dropdown">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="categoriesDropdown"
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Select Categories
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="categoriesDropdown">
+                                    <button type="button" class="dropdown-item btn btn-link clear-button">
+                                        Clear Selection
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    {% for category in categories %}
+                                        <label class="dropdown-item">
+                                            <input type="checkbox" class="category-checkbox" name="categories"
+                                                   value="{{ category.id }}"
+                                                   {% if category.id in request.GET.categories %}checked{% endif %}>
+                                            {{ category.name }}
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="mb-3 px-3">
+                            <label>Genders:</label><br>
+                            <div class="dropdown">
+                                <button class="btn btn-light dropdown-toggle w-100" type="button" id="gendersDropdown"
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Select Gender
+                                </button>
+                                <div class="dropdown-menu w-100" aria-labelledby="gendersDropdown">
+                                    <button type="button" class="dropdown-item btn btn-link w-100 clear-button-genders">
+                                        Clear Selection
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    {% for choice, label in genders %}
+                                        <div class="form-check">
+                                            <input class="form-check-input gender-radio" type="radio" name="genders"
+                                                   value="{{ choice }}"
+                                                   {% if choice == request.GET.genders %}checked{% endif %}>
+                                            <label class="form-check-label">{{ label }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label>Manufacturers:</label><br>
+                            <div class="dropdown">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="manufacturersDropdown"
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Select Manufacturers
+                                </button>
+                                <div class="dropdown-menu bg-white" aria-labelledby="manufacturersDropdown">
+                                    <button type="button" class="dropdown-item btn btn-link clear-button-man">
+                                        Clear Selection
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    {% for manufacturer in manufacturers %}
+                                        <label class="dropdown-item">
+                                            <input type="checkbox" class="manufacturer-checkbox" name="manufacturers"
+                                                   value="{{ manufacturer.id }}"
+                                                   {% if manufacturer.id in request.GET.manufacturers %}checked{% endif %}>
+                                            {{ manufacturer.name }}
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-5 px-3 w-100">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <button type="button" class="btn btn-link clear-button-all">Clear
+                                Filters
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                {% for product in products %}
+                    <div class="col-md-3 mb-4">
+
+                        <div class="card">
+                            {% if product.image %}
+                                <a href="{% url 'product_detail' product.pk %}">
+                                    <img src="{{ product.image.url }}" class="card-img-top " alt="{{ product.name }}">
+                                </a>
+                            {% endif %}
+                            <div class="card-body">
+                                <a href="{% url 'product_detail' product.pk %}"
+                                   class="text-primary text-decoration-none">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                </a>
+
+                                <p class="card-text">{{ product.manufacturer.name }}</p>
+                                <p class="card-text">{{ product.price }}$</p>
+                                <p class="card-text">{{ product.get_gender_display }}</p>
+                                <!-- Display the gender -->
+                                <div class="mb-2 col-3">
+                                    <input type="number" id="quantity" name="quantity" value="1"
+                                           class="form-control" min="1">
+                                </div>
+                                {% if not user.is_superuser %}
+
+                                       <div class="row">
+    <div class="col-12 col-md-6 mt-2 mx-4 w-100">
+        <div class="d-flex">
+            <form method="post" action="{% url 'add_to_cart' product.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-light">
+                    <i class="me-1 fa fa-shopping-basket"></i>Add to cart
+                </button>
+            </form>
+            <form method="post" action="{% url 'place_order' product.pk %}" class="ms-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    Buy
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-12 col-md-6 mt-2">
+                                                <a href="{% url 'edit_product' product.pk %}"
+                                                   class="btn btn-warning btn-block">
+                                                    Edit
+                                                </a>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <form method="post" action="{% url 'delete_product' product.pk %}"
+                                                      class="mt-2">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-block">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+
+                    </div>
+                    {% if forloop.counter|divisibleby:4 %}
+                        </div>
+                        <div class="row">
+                    {% endif %}
+                {% endfor %}
+                </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <nav aria-label="Product Pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if products.has_previous %}
+                                <li class="page-item"><a class="page-link"
+                                                         href="?page={{ products.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            {% for page in products.paginator.page_range %}
+                                {% if products.number == page %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ page }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if products.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add event listener to clear button
+        document.querySelector(".clear-button").addEventListener("click", function () {
+            const checkboxes = document.querySelectorAll("[name='categories']");
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = false;
+            });
+        });
+
+        document.querySelector(".clear-button-genders").addEventListener("click", function () {
+            const radios = document.querySelectorAll("[name='genders']");
+            radios.forEach(function (radio) {
+                radio.checked = false;
+            });
+        });
+        document.querySelector(".clear-button-man").addEventListener("click", function () {
+            const checkboxes = document.querySelectorAll("[name='manufacturers']");
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = false;
+            });
+        });
+
+    </script>
+    <script>
+    $(document).ready(function () {
+        $(".category-checkbox, .gender-radio, .manufacturer-checkbox").change(function () {
+            updateClearButtonVisibility();
+        });
+
+        $('.clear-button-all').on('click', function () {
+            clearSelections('categories');
+            clearSelections('genders');
+            clearSelections('manufacturers');
+            $('#search').val('');
+            const urlWithoutParams = window.location.origin + window.location.pathname;
+            history.pushState({}, null, urlWithoutParams);
+            window.location.href = urlWithoutParams;
+        });
+
+        function clearSelections(target) {
+            $(`[name='${target}']:checked`).prop("checked", false);
+        }
+
+
+    });
+</script>
+
+{% endblock %}

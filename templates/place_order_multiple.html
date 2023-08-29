@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <form method="post">
+            <h1>Place Order for Multiple Products</h1>
+            <table class="table table-bordered">
+                <!-- Table headers ... -->
+                <tbody>
+                {% for product in ordered_products %}
+                    <tr>
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.product_price }}</td>
+                        <td>
+                            <input type="number" class="product-quantity" name="product_{{ product.product_id }}_quantity"
+       value="{{ product.quantity }}" min="1" data-price="{{ product.product_price }}">
+
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <p class="display-6">Total products: <span id="total-products">0</span>, Total quantity: <span
+                id="total-quantity">0</span>, Total price: <span id="total-price">0.00</span></p>
+
+            <!-- User Information fields ... -->
+            <h2>User Information:</h2>
+            <div class="form-group-sm w-25">
+                <label for="address">Name:</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ user_profile.name }}">
+            </div>
+            <div class="form-group-sm w-25">
+                <label for="address">Surname:</label>
+                <input type="text" class="form-control" id="surname" name="surname" value="{{ user_profile.surname }}">
+            </div>
+            <div class="form-group-sm w-50">
+                <label for="address">Address:</label>
+                <input type="text" class="form-control" id="address" name="address" value="{{ user_profile.address }}">
+            </div>
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success mt-4">Make Order</button>
+        </form>
+    </div>
+
+    <script>
+        const productQuantities = document.querySelectorAll('.product-quantity');
+        const totalProductsSpan = document.getElementById('total-products');
+        const totalQuantitySpan = document.getElementById('total-quantity');
+        const totalPriceSpan = document.getElementById('total-price');
+
+        productQuantities.forEach(quantityInput => {
+            quantityInput.addEventListener('input', calculateTotals);
+        });
+
+        function calculateTotals() {
+            let totalProducts = 0;
+            let totalQuantity = 0;
+            let totalPrice = 0;
+
+            productQuantities.forEach(quantityInput => {
+                const quantity = parseInt(quantityInput.value);
+                const price = parseFloat(quantityInput.dataset.price);
+
+                totalProducts++;
+                totalQuantity += quantity;
+                totalPrice += price * quantity;
+            });
+
+            totalProductsSpan.textContent = totalProducts;
+            totalQuantitySpan.textContent = totalQuantity;
+            totalPriceSpan.textContent = totalPrice.toFixed(2);
+        }
+
+        // Calculate totals when the page loads
+        calculateTotals();
+    </script>
+{% endblock %}

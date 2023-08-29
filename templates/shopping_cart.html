@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h1>Shopping Cart</h1>
+  <a class="btn btn-dark" href="{% url 'bought_products' %}">View Bought Products</a>
+
+    {% csrf_token %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="select-all">Select All</th>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Manufacturer</th>
+          <th>Quantity</th>
+          <th>Price</th>
+            <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td><input type="checkbox" class="product-checkbox" data-product-id="{{ product.id }}" data-price="{{ product.price }}"></td>
+            <td>
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" width="50">
+              {% else %}
+                No Image Available
+              {% endif %}
+            </td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.manufacturer.name }}</td>
+            <td><input type="number" class="product-quantity" value="1" min="1" data-price="{{ product.price }}"></td>
+            <td>{{ product.price }}</td>
+          <td>
+              <form method="post" action="{% url 'remove_from_cart' product.pk %}">                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </form>
+          </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="display-6">Total products: <span id="total-products">0</span>, Total quantity: <span id="total-quantity">0</span>, Total price: <span id="total-price">0</span></p>
+    <button type="button" class="btn btn-success" id="buy-selected">Buy Selected</button>
+
+</div>
+<script>
+  const selectAllCheckbox = document.getElementById('select-all');
+  const productCheckboxes = document.querySelectorAll('.product-checkbox');
+  const productQuantities = document.querySelectorAll('.product-quantity');
+  const totalProductsSpan = document.getElementById('total-products');
+  const totalQuantitySpan = document.getElementById('total-quantity');
+  const totalPriceSpan = document.getElementById('total-price');
+
+  selectAllCheckbox.addEventListener('change', function () {
+    productCheckboxes.forEach(checkbox => checkbox.checked = selectAllCheckbox.checked);
+    calculateTotals();
+  });
+
+  productCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', calculateTotals);
+  });
+
+  productQuantities.forEach(quantityInput => {
+    quantityInput.addEventListener('input', calculateTotals);
+  });
+
+  function calculateTotals() {
+    let totalProducts = 0;
+    let totalQuantity = 0;
+    let totalPrice = 0;
+
+    productCheckboxes.forEach((checkbox, index) => {
+      if (checkbox.checked) {
+        totalProducts++;
+        totalQuantity += parseInt(productQuantities[index].value);
+        totalPrice += parseFloat(checkbox.dataset.price) * parseInt(productQuantities[index].value);
+      }
+    });
+
+    totalProductsSpan.textContent = totalProducts;
+    totalQuantitySpan.textContent = totalQuantity;
+    totalPriceSpan.textContent = totalPrice.toFixed(2);
+  }
+
+const buySelectedButton = document.getElementById('buy-selected');
+  buySelectedButton.addEventListener('click', function () {
+    const selectedProducts = [];
+    productCheckboxes.forEach((checkbox, index) => {
+      if (checkbox.checked) {
+        const productId = checkbox.getAttribute('data-product-id');
+      const quantity = productQuantities[index].value;
+      selectedProducts.push({ productId, quantity });
+      }
+    });
+
+  if (selectedProducts.length > 0) {
+  // Construct the query parameter string
+  const queryParams = new URLSearchParams();
+  queryParams.append('orders', JSON.stringify(selectedProducts));
+
+  // Construct the URL with the query parameters
+  const url = `{% url 'place_order_multiple' %}?${queryParams.toString()}`;
+
+  // Redirect to the URL
+  window.location.href = url;
+}
+
+    console.log(selectedProducts);
+
+  });
+
+
+
+
+
+</script>
+{% endblock %}
